@@ -56,22 +56,15 @@ func TestPostalCode(t *testing.T) {
 }
 
 func TestPostalCodeFormat(t *testing.T) {
-
+	codeRegexp := regexp.MustCompile(`^\S{1,2}\d{1,2} \d\S{1,2}`)
 	for _, pt := range postalcodeTests {
 		code := PostalCode(pt.Country)
-
 		switch pt.Country {
 		case "GB":
-			matched, err := regexp.MatchString("^\\S{1,2}\\d{1,2} \\d\\S{1,2}", code)
-			if err != nil {
-				t.Errorf("error matching %v", err)
-			}
-
-			if !matched {
+			if matched := codeRegexp.MatchString(code); !matched {
 				t.Fatalf("Invalid format for country %q",
 					pt.Country)
 			}
-
 		}
 	}
 }
