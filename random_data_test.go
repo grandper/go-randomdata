@@ -1,7 +1,6 @@
 package randomdata
 
 import (
-	"bytes"
 	"math/rand"
 	"net"
 	"reflect"
@@ -300,7 +299,7 @@ func TestIpV6Address(t *testing.T) {
 		t.Errorf("Invalid generated IPv6 address %v", ipAddress)
 	}
 	roundTripIP := net.ParseIP(ipAddress.String())
-	if roundTripIP == nil || !bytes.Equal(ipAddress, roundTripIP) {
+	if roundTripIP == nil || !net.IP.Equal(ipAddress, roundTripIP) {
 		t.Errorf("Invalid generated IPv6 address %v", ipAddress)
 	}
 }
