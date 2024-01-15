@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 var letterRunes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -99,8 +98,8 @@ func GenerateProfile(gender int) *Profile {
 		}
 	}
 	profile.Name.Title = privateRand.pr.Title(gender)
-	profile.Name.First = FirstName(gender)
-	profile.Name.Last = LastName()
+	profile.Name.First = privateRand.pr.FirstName(gender)
+	profile.Name.Last = privateRand.pr.LastName()
 	profile.ID.Name = "SSN"
 	profile.ID.Value = fmt.Sprintf("%d-%d-%d",
 		Number(101, 999),
@@ -108,7 +107,7 @@ func GenerateProfile(gender int) *Profile {
 		Number(100, 9999),
 	)
 
-	profile.Email = strings.ToLower(profile.Name.First) + "." + strings.ToLower(profile.Name.Last) + "@example.com"
+	profile.Email = privateRand.pr.createEmail(profile.Name.First, profile.Name.Last)
 	profile.Cell = PhoneNumber()
 	profile.Phone = PhoneNumber()
 	profile.Dob = FullDate()

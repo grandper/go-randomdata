@@ -3,7 +3,6 @@ package randomdata
 import (
 	"math/rand"
 	"net"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -39,10 +38,16 @@ func TestRand(t *testing.T) {
 		assert.Contains(t, list, elem)
 	})
 
+	t.Run("should return an empty string for empty slice", func(t *testing.T) {
+		list := []string{}
+		elem := r.StringFrom(list)
+		assert.Empty(t, elem)
+	})
+
 	t.Run("should generate a title", func(t *testing.T) {
 		titleMale := r.Title(Male)
 		titleFemale := r.Title(Female)
-		randomTitle := r.Title(100)
+		randomTitle := r.Title(RandomGender)
 
 		assert.Contains(t, jsonData.MaleTitles, titleMale, "titleMale empty or not in male titles")
 		assert.Contains(t, jsonData.FemaleTitles, titleFemale, "firstNameFemale empty or not in female titles")
@@ -52,6 +57,47 @@ func TestRand(t *testing.T) {
 		names = append(names, jsonData.FemaleTitles...)
 		assert.Contains(t, names, randomTitle, "randomName empty or not in male and female titles")
 	})
+
+	t.Run("should generate a first name", func(t *testing.T) {
+		firstNameMale := r.FirstName(Male)
+		firstNameFemale := r.FirstName(Female)
+		randomName := r.FirstName(RandomGender)
+
+		assert.Contains(t, jsonData.FirstNamesMale, firstNameMale, "firstNameMale empty or not in male names")
+		assert.Contains(t, jsonData.FirstNamesFemale, firstNameFemale, "firstNameFemale empty or not in female names")
+		assert.NotEmpty(t, randomName)
+	})
+
+	t.Run("should generate a last name", func(t *testing.T) {
+		assert.Contains(t, jsonData.LastNames, r.LastName(), "lastName empty or not in slice")
+	})
+
+	t.Run("should generate a full name", func(t *testing.T) {
+		fullNameMale := r.FullName(Male)
+		fullNameFemale := r.FullName(Female)
+		fullNameRandom := r.FullName(RandomGender)
+
+		maleSplit := strings.Fields(fullNameMale)
+		femaleSplit := strings.Fields(fullNameFemale)
+		randomSplit := strings.Fields(fullNameRandom)
+
+		assert.NotEmpty(t, maleSplit, "failed on full name male")
+		assert.Contains(t, jsonData.FirstNamesMale, maleSplit[0], "couldnt find maleSplit first name in firstNamesMale")
+		assert.Contains(t, jsonData.LastNames, maleSplit[1], "couldnt find maleSplit last name in lastNames")
+
+		assert.NotEmpty(t, femaleSplit, "failed on full name female")
+		assert.Contains(t, jsonData.FirstNamesFemale, femaleSplit[0], "couldnt find femaleSplit first name in firstNamesFemale")
+		assert.Contains(t, jsonData.LastNames, femaleSplit[1], "couldnt find femaleSplit last name in lastNames")
+
+		assert.NotEmpty(t, randomSplit, "failed on full name random")
+
+		firstNames := append(append([]string{}, jsonData.FirstNamesMale...), jsonData.FirstNamesFemale...)
+		assert.Contains(t, firstNames, randomSplit[0], "couldnt find randomSplit first name in either firstNamesMale or firstNamesFemale")
+	})
+
+	t.Run("should generate an email", func(t *testing.T) {
+		assert.NotEmpty(t, r.Email(), "failed to generate email with content")
+	})
 }
 
 func TestRandomStringDigits(t *testing.T) {
@@ -59,47 +105,6 @@ func TestRandomStringDigits(t *testing.T) {
 	assert.Len(t, StringNumber(2, ""), 4)
 	assert.Len(t, StringNumberExt(3, "/", 3), 11)
 	assert.Len(t, StringNumberExt(3, "", 3), 9)
-}
-
-func TestFirstName(t *testing.T) {
-	firstNameMale := FirstName(Male)
-	firstNameFemale := FirstName(Female)
-	randomName := FirstName(RandomGender)
-
-	assert.Contains(t, jsonData.FirstNamesMale, firstNameMale, "firstNameMale empty or not in male names")
-	assert.Contains(t, jsonData.FirstNamesFemale, firstNameFemale, "firstNameFemale empty or not in female names")
-	assert.NotEmpty(t, randomName)
-}
-
-func TestLastName(t *testing.T) {
-	assert.Contains(t, jsonData.LastNames, LastName(), "lastName empty or not in slice")
-}
-
-func TestFullName(t *testing.T) {
-	fullNameMale := FullName(Male)
-	fullNameFemale := FullName(Female)
-	fullNameRandom := FullName(RandomGender)
-
-	maleSplit := strings.Fields(fullNameMale)
-	femaleSplit := strings.Fields(fullNameFemale)
-	randomSplit := strings.Fields(fullNameRandom)
-
-	assert.NotEmpty(t, maleSplit, "failed on full name male")
-	assert.Contains(t, jsonData.FirstNamesMale, maleSplit[0], "couldnt find maleSplit first name in firstNamesMale")
-	assert.Contains(t, jsonData.LastNames, maleSplit[1], "couldnt find maleSplit last name in lastNames")
-
-	assert.NotEmpty(t, femaleSplit, "failed on full name female")
-	assert.Contains(t, jsonData.FirstNamesFemale, femaleSplit[0], "couldnt find femaleSplit first name in firstNamesFemale")
-	assert.Contains(t, jsonData.LastNames, femaleSplit[1], "couldnt find femaleSplit last name in lastNames")
-
-	assert.NotEmpty(t, randomSplit, "failed on full name random")
-
-	firstNames := append(append([]string{}, jsonData.FirstNamesMale...), jsonData.FirstNamesFemale...)
-	assert.Contains(t, firstNames, randomSplit[0], "couldnt find randomSplit first name in either firstNamesMale or firstNamesFemale")
-}
-
-func TestEmail(t *testing.T) {
-	assert.NotEmpty(t, Email(), "failed to generate email with content")
 }
 
 func TestCountry(t *testing.T) {
@@ -202,19 +207,6 @@ func TestDay(t *testing.T) {
 
 func TestMonth(t *testing.T) {
 	assert.Contains(t, jsonData.Months, Month(), "couldnt find month in months")
-}
-
-func TestStringSample(t *testing.T) {
-	list := []string{"str1", "str2", "str3"}
-	str := StringSample(list...)
-	assert.Equal(t, reflect.TypeOf(str).String(), "string", "didn't get a string object")
-	assert.Contains(t, list, str, "didn't get string from sample list")
-}
-
-func TestStringSampleEmptyList(t *testing.T) {
-	str := StringSample()
-	assert.Equal(t, reflect.TypeOf(str).String(), "string", "didn't get a string object")
-	assert.Empty(t, str, "didn't get empty string for empty sample list")
 }
 
 func TestFullDate(t *testing.T) {

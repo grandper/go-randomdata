@@ -3,26 +3,40 @@ package randomdata
 import "fmt"
 
 func Example() {
+	r := FromSeed(1234)
+
+	// Print a male title
+	fmt.Println(r.FirstName(Male))
+
+	// Print a female title
+	fmt.Println(r.FirstName(Female))
+
+	// Print a title with random gender
+	fmt.Println(r.FirstName(RandomGender))
+
 	// Print a male first name
-	fmt.Println(FirstName(Male))
+	fmt.Println(r.FirstName(Male))
 
 	// Print a female first name
-	fmt.Println(FirstName(Female))
+	fmt.Println(r.FirstName(Female))
+
+	// Print a first name with random gender
+	fmt.Println(r.FirstName(RandomGender))
 
 	// Print a last name
-	fmt.Println(LastName())
+	fmt.Println(r.LastName())
 
 	// Print a male name
-	fmt.Println(FullName(Male))
+	fmt.Println(r.FullName(Male))
 
 	// Print a female name
-	fmt.Println(FullName(Female))
+	fmt.Println(r.FullName(Female))
 
 	// Print a name with random gender
-	fmt.Println(FullName(RandomGender))
+	fmt.Println(r.FullName(RandomGender))
 
 	// Print a random email
-	fmt.Println(Email())
+	fmt.Println(r.Email())
 
 	// Print a country with full text representation
 	fmt.Println(Country(FullCountry))
