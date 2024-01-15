@@ -2,7 +2,7 @@ package randomdata
 
 import "fmt"
 
-func ExampleRandomdata() {
+func Example() {
 	// Print a male first name
 	fmt.Println(FirstName(Male))
 
