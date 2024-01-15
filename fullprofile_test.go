@@ -7,13 +7,15 @@ import (
 )
 
 func Test_FullProfileGenerator(t *testing.T) {
-	profile := GenerateProfile(1)
+	r := FromSeed(1234)
+
+	profile := r.GenerateProfile(1)
 	assert.Equal(t, "female", profile.Gender)
 
-	profile = GenerateProfile(0)
+	profile = r.GenerateProfile(0)
 	assert.Equal(t, "male", profile.Gender)
 
-	profile = GenerateProfile(2)
+	profile = r.GenerateProfile(2)
 	assert.NotNil(t, profile, "profile failed to generate")
 
 	CheckPhoneNumber(profile.Cell, t, "expected Cell# to be a valid phone number: %v", profile.Cell)

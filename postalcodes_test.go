@@ -45,17 +45,19 @@ var postalcodeTests = []struct {
 }
 
 func TestPostalCode(t *testing.T) {
+	r := FromSeed(1234)
 	for _, pt := range postalcodeTests {
-		code := PostalCode(pt.Country)
+		code := r.PostalCode(pt.Country)
 		assert.Equal(t, len(code), pt.Size, "invalid length for country %q: Expected %d, have %d.",
 			pt.Country, pt.Size, len(code))
 	}
 }
 
 func TestPostalCodeFormat(t *testing.T) {
+	r := FromSeed(1234)
 	codeRegexp := regexp.MustCompile(`^\S{1,2}\d{1,2} \d\S{1,2}`)
 	for _, pt := range postalcodeTests {
-		code := PostalCode(pt.Country)
+		code := r.PostalCode(pt.Country)
 		switch pt.Country {
 		case "GB":
 			assert.True(t, codeRegexp.MatchString(code), "invalid format for country %q", pt.Country)

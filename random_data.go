@@ -104,42 +104,31 @@ func (r *Rand) Float64() float64 {
 	return r.pr.Float64()
 }
 
-type pRand struct {
-	pr *Rand
-}
-
-func (r *pRand) Intn(n int) int {
-	return r.pr.Intn(n)
-}
-
-func (r *pRand) Float64() float64 {
-	return r.pr.Float64()
+// RandStringRunes generates random runes.
+func (r *Rand) RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[r.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 var jsonData = jsonContent{}
-var privateRand *pRand
 
 func init() {
-	privateRand = &pRand{FromRand(rand.New(rand.NewSource(time.Now().UnixNano())))}
 	jsonData = jsonContent{}
-
 	err := json.Unmarshal(data, &jsonData)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-// StringFrom eturns a random element of a slice.
+// StringFrom returns a random element of a slice.
 func (r *Rand) StringFrom(source []string) string {
 	if len(source) == 0 {
 		return ""
 	}
 	return source[r.Intn(len(source))]
-}
-
-// Returns a random part of a slice.
-func StringFrom(source []string) string {
-	return source[privateRand.Intn(len(source))]
 }
 
 // Title returns a random title, gender decides the gender of the name.
@@ -150,7 +139,7 @@ func (r *Rand) Title(gender int) string {
 	case Female:
 		return r.StringFrom(jsonData.FemaleTitles)
 	default:
-		return r.Title(privateRand.Intn(2))
+		return r.Title(r.Intn(2))
 	}
 }
 
@@ -184,101 +173,101 @@ func (r *Rand) Email() string {
 }
 
 func (r *Rand) createEmail(firstName, lastName string) string {
-	return strings.ToLower(firstName+"."+lastName) + StringNumberExt(1, "", 3) + "@" + r.StringFrom(jsonData.Domains)
+	return strings.ToLower(firstName+"."+lastName) + r.StringNumberExt(1, "", 3) + "@" + r.StringFrom(jsonData.Domains)
 }
 
 // Country returns a random country, countryStyle decides what kind of format the returned country will have.
-func Country(countryStyle int64) string {
+func (r *Rand) Country(countryStyle int64) string {
 	country := ""
 	switch countryStyle {
 	case FullCountry:
-		country = StringFrom(jsonData.Countries)
+		country = r.StringFrom(jsonData.Countries)
 	case TwoCharCountry:
-		country = StringFrom(jsonData.CountriesTwoChars)
+		country = r.StringFrom(jsonData.CountriesTwoChars)
 	case ThreeCharCountry:
-		country = StringFrom(jsonData.CountriesThreeChars)
+		country = r.StringFrom(jsonData.CountriesThreeChars)
 	default:
 	}
 	return country
 }
 
 // Currency returns a random currency under ISO 4217 format.
-func Currency() string {
-	return StringFrom(jsonData.Currencies)
+func (r *Rand) Currency() string {
+	return r.StringFrom(jsonData.Currencies)
 }
 
 // City returns a random city.
-func City() string {
-	return StringFrom(jsonData.Cities)
+func (r *Rand) City() string {
+	return r.StringFrom(jsonData.Cities)
 }
 
 // ProvinceForCountry returns a randomly selected province (state, county,subdivision ) name for a supplied country.
 // If the country is not supported it will return an empty string.
-func ProvinceForCountry(countrycode string) string {
+func (r *Rand) ProvinceForCountry(countrycode string) string {
 	switch countrycode {
 	case "US":
-		return StringFrom(jsonData.States)
+		return r.StringFrom(jsonData.States)
 	case "GB":
-		return StringFrom(jsonData.ProvincesGB)
+		return r.StringFrom(jsonData.ProvincesGB)
 	}
 	return ""
 }
 
 // State returns a random american state.
-func State(typeOfState int) string {
+func (r *Rand) State(typeOfState int) string {
 	if typeOfState == Small {
-		return StringFrom(jsonData.StatesSmall)
+		return r.StringFrom(jsonData.StatesSmall)
 	}
-	return StringFrom(jsonData.States)
+	return r.StringFrom(jsonData.States)
 }
 
 // Street returns a random fake street name.
-func Street() string {
-	return fmt.Sprintf("%s %s", StringFrom(jsonData.People), StringFrom(jsonData.StreetTypes))
+func (r *Rand) Street() string {
+	return fmt.Sprintf("%s %s", r.StringFrom(jsonData.People), r.StringFrom(jsonData.StreetTypes))
 }
 
 // StreetForCountry returns a random fake street name typical to the supplied country.
 // If the country is not supported it will return an empty string.
-func StreetForCountry(countrycode string) string {
+func (r *Rand) StreetForCountry(countrycode string) string {
 	switch countrycode {
 	case "US":
-		return Street()
+		return r.Street()
 	case "GB":
-		return fmt.Sprintf("%s %s", StringFrom(jsonData.StreetNameGB), StringFrom(jsonData.StreetTypesGB))
+		return fmt.Sprintf("%s %s", r.StringFrom(jsonData.StreetNameGB), r.StringFrom(jsonData.StreetTypesGB))
 	}
 	return ""
 }
 
 // Address returns an american style address.
-func Address() string {
-	return fmt.Sprintf("%d %s,\n%s, %s, %s", Number(100), Street(), City(), State(Small), PostalCode("US"))
+func (r *Rand) Address() string {
+	return fmt.Sprintf("%d %s,\n%s, %s, %s", r.Number(100), r.Street(), r.City(), r.State(Small), r.PostalCode("US"))
 }
 
 // Paragraph returns a random paragraph.
-func Paragraph() string {
-	return StringFrom(jsonData.Paragraphs)
+func (r *Rand) Paragraph() string {
+	return r.StringFrom(jsonData.Paragraphs)
 }
 
 // Number returns a random number, if only one integer (n1) is supplied it returns a number in [0,n1).
 // if a second argument is supplied it returns a number in [n1,n2).
-func Number(numberRange ...int) int {
+func (r *Rand) Number(numberRange ...int) int {
 	nr := 0
 	if len(numberRange) > 1 {
 		nr = 1
-		nr = privateRand.Intn(numberRange[1]-numberRange[0]) + numberRange[0]
+		nr = r.Intn(numberRange[1]-numberRange[0]) + numberRange[0]
 	} else {
-		nr = privateRand.Intn(numberRange[0])
+		nr = r.Intn(numberRange[0])
 	}
 	return nr
 }
 
-func Decimal(numberRange ...int) float64 {
+func (r *Rand) Decimal(numberRange ...int) float64 {
 	nr := 0.0
 	if len(numberRange) > 1 {
 		nr = 1.0
-		nr = privateRand.Float64()*(float64(numberRange[1])-float64(numberRange[0])) + float64(numberRange[0])
+		nr = r.Float64()*(float64(numberRange[1])-float64(numberRange[0])) + float64(numberRange[0])
 	} else {
-		nr = privateRand.Float64() * float64(numberRange[0])
+		nr = r.Float64() * float64(numberRange[0])
 	}
 
 	if len(numberRange) > 2 {
@@ -288,11 +277,11 @@ func Decimal(numberRange ...int) float64 {
 	return nr
 }
 
-func StringNumberExt(numberPairs int, separator string, numberOfDigits int) string {
+func (r *Rand) StringNumberExt(numberPairs int, separator string, numberOfDigits int) string {
 	numberString := ""
 	for i := 0; i < numberPairs; i++ {
 		for d := 0; d < numberOfDigits; d++ {
-			numberString += fmt.Sprintf("%d", Number(0, 9))
+			numberString += fmt.Sprintf("%d", r.Number(0, 9))
 		}
 		if i+1 != numberPairs {
 			numberString += separator
@@ -302,34 +291,34 @@ func StringNumberExt(numberPairs int, separator string, numberOfDigits int) stri
 }
 
 // StringNumber returns a random number as a string.
-func StringNumber(numberPairs int, separator string) string {
-	return StringNumberExt(numberPairs, separator, 2)
+func (r *Rand) StringNumber(numberPairs int, separator string) string {
+	return r.StringNumberExt(numberPairs, separator, 2)
 }
 
 // Alphanumeric returns a random alphanumeric string consits of [0-9a-zA-Z].
-func Alphanumeric(length int) string {
+func (r *Rand) Alphanumeric(length int) string {
 	list := make([]byte, length)
 
 	for i := range list {
-		list[i] = ALPHANUMERIC[privateRand.Intn(len(ALPHANUMERIC))]
+		list[i] = ALPHANUMERIC[r.Intn(len(ALPHANUMERIC))]
 	}
 
 	return string(list)
 }
 
-func Boolean() bool {
-	nr := privateRand.Intn(2)
+func (r *Rand) Boolean() bool {
+	nr := r.Intn(2)
 	return nr != 0
 }
 
 // Noun returns a random noun.
-func Noun() string {
-	return StringFrom(jsonData.Nouns)
+func (r *Rand) Noun() string {
+	return r.StringFrom(jsonData.Nouns)
 }
 
 // Adjective returns a random adjective.
-func Adjective() string {
-	return StringFrom(jsonData.Adjectives)
+func (r *Rand) Adjective() string {
+	return r.StringFrom(jsonData.Adjectives)
 }
 
 func uppercaseFirstLetter(word string) string {
@@ -339,15 +328,15 @@ func uppercaseFirstLetter(word string) string {
 }
 
 // SillyName returns a silly name, useful for randomizing naming of things.
-func SillyName() string {
-	return uppercaseFirstLetter(Noun()) + Adjective()
+func (r *Rand) SillyName() string {
+	return uppercaseFirstLetter(r.Noun()) + r.Adjective()
 }
 
 // IpV4Address returns a valid IPv4 address as string.
-func IpV4Address() string {
+func (r *Rand) IpV4Address() string {
 	blocks := []string{}
 	for i := 0; i < 4; i++ {
-		number := privateRand.Intn(255)
+		number := r.Intn(255)
 		blocks = append(blocks, strconv.Itoa(number))
 	}
 
@@ -355,20 +344,20 @@ func IpV4Address() string {
 }
 
 // IpV6Address returns a valid IPv6 address as net.IP.
-func IpV6Address() string {
+func (r *Rand) IpV6Address() string {
 	var ip net.IP
 	for i := 0; i < net.IPv6len; i++ {
-		number := uint8(privateRand.Intn(255))
+		number := uint8(r.Intn(255))
 		ip = append(ip, number)
 	}
 	return ip.String()
 }
 
 // MacAddress returns an mac address string.
-func MacAddress() string {
+func (r *Rand) MacAddress() string {
 	blocks := []string{}
 	for i := 0; i < 6; i++ {
-		number := fmt.Sprintf("%02x", privateRand.Intn(255))
+		number := fmt.Sprintf("%02x", r.Intn(255))
 		blocks = append(blocks, number)
 	}
 
@@ -376,22 +365,22 @@ func MacAddress() string {
 }
 
 // Day returns random day.
-func Day() string {
-	return StringFrom(jsonData.Days)
+func (r *Rand) Day() string {
+	return r.StringFrom(jsonData.Days)
 }
 
 // Month returns random month.
-func Month() string {
-	return StringFrom(jsonData.Months)
+func (r *Rand) Month() string {
+	return r.StringFrom(jsonData.Months)
 }
 
 // FullDate returns full date.
-func FullDate() string {
+func (r *Rand) FullDate() string {
 	timestamp := time.Now()
 	year := timestamp.Year()
-	month := Number(1, 13)
+	month := r.Number(1, 13)
 	maxDay := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-	day := Number(1, maxDay+1)
+	day := r.Number(1, maxDay+1)
 	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 	return date.Format(DateOutputLayout)
 }
@@ -401,7 +390,7 @@ func FullDate() string {
 // If only one argument is supplied it is treated as the max date to return.
 // If a second argument is supplied it returns a date between (and including) the two dates.
 // Returned date is in format "Monday 2 Jan 2006".
-func FullDateInRange(dateRange ...string) string {
+func (r *Rand) FullDateInRange(dateRange ...string) string {
 	var (
 		min        time.Time
 		max        time.Time
@@ -415,32 +404,32 @@ func FullDateInRange(dateRange ...string) string {
 		max, _ = time.Parse(DateInputLayout, dateRange[1])
 	}
 	if !max.IsZero() && max.After(min) {
-		duration = Number(int(max.Sub(min))) * -1
+		duration = r.Number(int(max.Sub(min))) * -1
 		dateString = max.Add(time.Duration(duration)).Format(DateOutputLayout)
 	} else if !max.IsZero() && !max.After(min) {
 		dateString = max.Format(DateOutputLayout)
 	} else {
-		dateString = FullDate()
+		dateString = r.FullDate()
 	}
 	return dateString
 }
 
-func Timezone() string {
-	return StringFrom(jsonData.Timezones)
+func (r *Rand) Timezone() string {
+	return r.StringFrom(jsonData.Timezones)
 }
 
-func Locale() string {
-	return StringFrom(jsonData.Locales)
+func (r *Rand) Locale() string {
+	return r.StringFrom(jsonData.Locales)
 }
 
-func UserAgentString() string {
-	return StringFrom(jsonData.UserAgents)
+func (r *Rand) UserAgentString() string {
+	return r.StringFrom(jsonData.UserAgents)
 }
 
-func PhoneNumber() string {
-	str := StringFrom(jsonData.CountryCallingCodes) + " "
+func (r *Rand) PhoneNumber() string {
+	str := r.StringFrom(jsonData.CountryCallingCodes) + " "
 
-	str += Digits(privateRand.Intn(3) + 1)
+	str += r.Digits(r.Intn(3) + 1)
 
 	for {
 		// max 15 chars
@@ -448,6 +437,6 @@ func PhoneNumber() string {
 		if remaining < 2 {
 			return "+" + str
 		}
-		str += " " + Digits(privateRand.Intn(remaining-1)+1)
+		str += " " + r.Digits(r.Intn(remaining-1)+1)
 	}
 }

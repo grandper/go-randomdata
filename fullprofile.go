@@ -13,6 +13,7 @@ import (
 var letterRunes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 var portraitDirs = []string{"men", "women"}
 
+// Profile contains all the data related to a complete profil.
 type Profile struct {
 	Gender string `json:"gender"`
 	Name   struct {
@@ -55,12 +56,59 @@ type Profile struct {
 	Nat string `json:"nat"`
 }
 
-func RandStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[privateRand.Intn(len(letterRunes))]
+// GenerateProfile generates a full profile.
+func (r *Rand) GenerateProfile(gender int) *Profile {
+	profile := &Profile{}
+	if gender == Male {
+		profile.Gender = "male"
+	} else if gender == Female {
+		profile.Gender = "female"
+	} else {
+		gender = r.Intn(2)
+		if gender == Male {
+			profile.Gender = "male"
+		} else {
+			profile.Gender = "female"
+		}
 	}
-	return string(b)
+	profile.Name.Title = r.Title(gender)
+	profile.Name.First = r.FirstName(gender)
+	profile.Name.Last = r.LastName()
+	profile.ID.Name = "SSN"
+	profile.ID.Value = fmt.Sprintf("%d-%d-%d",
+		r.Number(101, 999),
+		r.Number(01, 99),
+		r.Number(100, 9999),
+	)
+
+	profile.Email = r.createEmail(profile.Name.First, profile.Name.Last)
+	profile.Cell = r.PhoneNumber()
+	profile.Phone = r.PhoneNumber()
+	profile.Dob = r.FullDate()
+	profile.Registered = r.FullDate()
+	profile.Nat = "US"
+
+	profile.Location.City = r.City()
+	i, _ := strconv.Atoi(r.PostalCode("US"))
+	profile.Location.Postcode = i
+	profile.Location.State = r.State(2)
+	profile.Location.Street = r.StringNumber(1, "") + " " + r.Street()
+
+	profile.Login.Username = r.SillyName()
+	pass := r.SillyName()
+	salt := r.RandStringRunes(16)
+	profile.Login.Password = pass
+	profile.Login.Salt = salt
+	profile.Login.Md5 = getMD5Hash(pass + salt)
+	profile.Login.Sha1 = getSha1(pass + salt)
+	profile.Login.Sha256 = getSha256(pass + salt)
+
+	pic := r.Intn(35)
+	profile.Picture.Large = fmt.Sprintf("https://randomuser.me/api/portraits/%s/%d.jpg", portraitDirs[gender], pic)
+	profile.Picture.Medium = fmt.Sprintf("https://randomuser.me/api/portraits/med/%s/%d.jpg", portraitDirs[gender], pic)
+	profile.Picture.Thumbnail = fmt.Sprintf("https://randomuser.me/api/portraits/thumb/%s/%d.jpg", portraitDirs[gender], pic)
+
+	return profile
 }
 
 func getMD5Hash(text string) string {
@@ -81,58 +129,4 @@ func getSha256(text string) string {
 	hasher.Write([]byte(text))
 	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	return sha
-}
-
-func GenerateProfile(gender int) *Profile {
-	profile := &Profile{}
-	if gender == Male {
-		profile.Gender = "male"
-	} else if gender == Female {
-		profile.Gender = "female"
-	} else {
-		gender = privateRand.Intn(2)
-		if gender == Male {
-			profile.Gender = "male"
-		} else {
-			profile.Gender = "female"
-		}
-	}
-	profile.Name.Title = privateRand.pr.Title(gender)
-	profile.Name.First = privateRand.pr.FirstName(gender)
-	profile.Name.Last = privateRand.pr.LastName()
-	profile.ID.Name = "SSN"
-	profile.ID.Value = fmt.Sprintf("%d-%d-%d",
-		Number(101, 999),
-		Number(01, 99),
-		Number(100, 9999),
-	)
-
-	profile.Email = privateRand.pr.createEmail(profile.Name.First, profile.Name.Last)
-	profile.Cell = PhoneNumber()
-	profile.Phone = PhoneNumber()
-	profile.Dob = FullDate()
-	profile.Registered = FullDate()
-	profile.Nat = "US"
-
-	profile.Location.City = City()
-	i, _ := strconv.Atoi(PostalCode("US"))
-	profile.Location.Postcode = i
-	profile.Location.State = State(2)
-	profile.Location.Street = StringNumber(1, "") + " " + Street()
-
-	profile.Login.Username = SillyName()
-	pass := SillyName()
-	salt := RandStringRunes(16)
-	profile.Login.Password = pass
-	profile.Login.Salt = salt
-	profile.Login.Md5 = getMD5Hash(pass + salt)
-	profile.Login.Sha1 = getSha1(pass + salt)
-	profile.Login.Sha256 = getSha256(pass + salt)
-
-	pic := privateRand.Intn(35)
-	profile.Picture.Large = fmt.Sprintf("https://randomuser.me/api/portraits/%s/%d.jpg", portraitDirs[gender], pic)
-	profile.Picture.Medium = fmt.Sprintf("https://randomuser.me/api/portraits/med/%s/%d.jpg", portraitDirs[gender], pic)
-	profile.Picture.Thumbnail = fmt.Sprintf("https://randomuser.me/api/portraits/thumb/%s/%d.jpg", portraitDirs[gender], pic)
-
-	return profile
 }

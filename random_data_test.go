@@ -101,16 +101,18 @@ func TestRand(t *testing.T) {
 }
 
 func TestRandomStringDigits(t *testing.T) {
-	assert.Len(t, StringNumber(2, "-"), 5)
-	assert.Len(t, StringNumber(2, ""), 4)
-	assert.Len(t, StringNumberExt(3, "/", 3), 11)
-	assert.Len(t, StringNumberExt(3, "", 3), 9)
+	r := FromSeed(1234)
+	assert.Len(t, r.StringNumber(2, "-"), 5)
+	assert.Len(t, r.StringNumber(2, ""), 4)
+	assert.Len(t, r.StringNumberExt(3, "/", 3), 11)
+	assert.Len(t, r.StringNumberExt(3, "", 3), 9)
 }
 
 func TestCountry(t *testing.T) {
-	countryFull := Country(FullCountry)
-	countryTwo := Country(TwoCharCountry)
-	countryThree := Country(ThreeCharCountry)
+	r := FromSeed(1234)
+	countryFull := r.Country(FullCountry)
+	countryTwo := r.Country(TwoCharCountry)
+	countryThree := r.Country(ThreeCharCountry)
 
 	assert.GreaterOrEqual(t, len(countryThree), 3, "countryThree < 3 chars")
 	assert.Contains(t, jsonData.Countries, countryFull, "couldnt find country in countries")
@@ -119,19 +121,23 @@ func TestCountry(t *testing.T) {
 }
 
 func TestCurrency(t *testing.T) {
-	assert.Contains(t, jsonData.Currencies, Currency(), "could not find currency in currencies")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.Currencies, r.Currency(), "could not find currency in currencies")
 }
 
 func TestCity(t *testing.T) {
-	assert.Contains(t, jsonData.Cities, City(), "couldnt find city in cities")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.Cities, r.City(), "couldnt find city in cities")
 }
 
 func TestParagraph(t *testing.T) {
-	assert.Contains(t, jsonData.Paragraphs, Paragraph(), "couldnt find paragraph in paragraphs")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.Paragraphs, r.Paragraph(), "couldnt find paragraph in paragraphs")
 }
 
 func TestAlphanumeric(t *testing.T) {
-	alphanumric := Alphanumeric(10)
+	r := FromSeed(1234)
+	alphanumric := r.Alphanumeric(10)
 	assert.Len(t, alphanumric, 10, "alphanumric has wrong size")
 
 	re := regexp.MustCompile(`^[[:alnum:]]+$`)
@@ -139,31 +145,37 @@ func TestAlphanumeric(t *testing.T) {
 }
 
 func TestBool(t *testing.T) {
-	booleanVal := Boolean()
+	r := FromSeed(1234)
+	booleanVal := r.Boolean()
 	assert.True(t, booleanVal == true || booleanVal == false, "bool was wrong format")
 }
 
 func TestState(t *testing.T) {
-	assert.Contains(t, jsonData.StatesSmall, State(Small), "couldnt find small state name in states")
-	assert.Contains(t, jsonData.States, State(Large), "couldnt find state name in states")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.StatesSmall, r.State(Small), "couldnt find small state name in states")
+	assert.Contains(t, jsonData.States, r.State(Large), "couldnt find state name in states")
 }
 
 func TestNoun(t *testing.T) {
+	r := FromSeed(1234)
 	assert.NotEmpty(t, jsonData.Nouns)
-	assert.Contains(t, jsonData.Nouns, Noun(), "couldnt find noun in json data")
+	assert.Contains(t, jsonData.Nouns, r.Noun(), "couldnt find noun in json data")
 }
 
 func TestAdjective(t *testing.T) {
+	r := FromSeed(1234)
 	assert.NotEmpty(t, jsonData.Adjectives)
-	assert.Contains(t, jsonData.Adjectives, Adjective(), "couldnt find noun in json data")
+	assert.Contains(t, jsonData.Adjectives, r.Adjective(), "couldnt find noun in json data")
 }
 
 func TestSillyName(t *testing.T) {
-	assert.NotEmpty(t, SillyName(), "couldnt generate a silly name")
+	r := FromSeed(1234)
+	assert.NotEmpty(t, r.SillyName(), "couldnt generate a silly name")
 }
 
 func TestIpV4Address(t *testing.T) {
-	ipAddress := IpV4Address()
+	r := FromSeed(1234)
+	ipAddress := r.IpV4Address()
 
 	ipBlocks := strings.Split(ipAddress, ".")
 	assert.GreaterOrEqual(t, len(ipBlocks), 0, "invalid generated IP address")
@@ -178,7 +190,8 @@ func TestIpV4Address(t *testing.T) {
 }
 
 func TestIpV6Address(t *testing.T) {
-	ipAddress := net.ParseIP(IpV6Address())
+	r := FromSeed(1234)
+	ipAddress := net.ParseIP(r.IpV6Address())
 	assert.Len(t, ipAddress, net.IPv6len, "invalid generated IPv6 address %v", ipAddress)
 
 	roundTripIP := net.ParseIP(ipAddress.String())
@@ -187,13 +200,15 @@ func TestIpV6Address(t *testing.T) {
 }
 
 func TestMacAddress(t *testing.T) {
-	mac := MacAddress()
+	r := FromSeed(1234)
+	mac := r.MacAddress()
 	assert.Len(t, mac, 17, "invalid generated Mac address %v", mac)
 	assert.True(t, regexp.MustCompile(`([0-9a-fa-f]{2}[:-]){5}([0-9a-fa-f]{2})`).MatchString(mac), "invalid generated Mac address %v", mac)
 }
 
 func TestDecimal(t *testing.T) {
-	d := Decimal(2, 4, 3)
+	r := FromSeed(1234)
+	d := r.Decimal(2, 4, 3)
 	assert.GreaterOrEqual(t, d, 2.0, "invalid generate range")
 	assert.LessOrEqual(t, d, 4.0, "invalid generate range")
 
@@ -202,16 +217,19 @@ func TestDecimal(t *testing.T) {
 }
 
 func TestDay(t *testing.T) {
-	assert.Contains(t, jsonData.Days, Day(), "couldnt find day in days")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.Days, r.Day(), "couldnt find day in days")
 }
 
 func TestMonth(t *testing.T) {
-	assert.Contains(t, jsonData.Months, Month(), "couldnt find month in months")
+	r := FromSeed(1234)
+	assert.Contains(t, jsonData.Months, r.Month(), "couldnt find month in months")
 }
 
 func TestFullDate(t *testing.T) {
-	fulldateOne := FullDate()
-	fulldateTwo := FullDate()
+	r := FromSeed(1234)
+	fulldateOne := r.FullDate()
+	fulldateTwo := r.FullDate()
 
 	_, err := time.Parse(DateOutputLayout, fulldateOne)
 	assert.NoError(t, err, "invalid random full date")
@@ -223,23 +241,26 @@ func TestFullDate(t *testing.T) {
 }
 
 func TestFullDatePenetration(t *testing.T) {
+	r := FromSeed(1234)
 	for i := 0; i < 100000; i += 1 {
-		d := FullDate()
+		d := r.FullDate()
 		_, err := time.Parse(DateOutputLayout, d)
 		assert.NoError(t, err, "invalid random full date")
 	}
 }
 
 func TestFullDateInRangeNoArgs(t *testing.T) {
-	fullDate := FullDateInRange()
+	r := FromSeed(1234)
+	fullDate := r.FullDateInRange()
 	_, err := time.Parse(DateOutputLayout, fullDate)
 	assert.NoError(t, err, "didn't get valid date format")
 }
 
 func TestFullDateInRangeOneArg(t *testing.T) {
+	r := FromSeed(1234)
 	maxDate, _ := time.Parse(DateInputLayout, "2016-12-31")
 	for i := 0; i < 10000; i++ {
-		fullDate := FullDateInRange("2016-12-31")
+		fullDate := r.FullDateInRange("2016-12-31")
 		d, err := time.Parse(DateOutputLayout, fullDate)
 		assert.NoError(t, err, "didn't get valid date format")
 		assert.False(t, d.After(maxDate), "random date didn't match specified max date")
@@ -247,10 +268,11 @@ func TestFullDateInRangeOneArg(t *testing.T) {
 }
 
 func TestFullDateInRangeTwoArgs(t *testing.T) {
+	r := FromSeed(1234)
 	minDate, _ := time.Parse(DateInputLayout, "2016-01-01")
 	maxDate, _ := time.Parse(DateInputLayout, "2016-12-31")
 	for i := 0; i < 10000; i++ {
-		fullDate := FullDateInRange("2016-01-01", "2016-12-31")
+		fullDate := r.FullDateInRange("2016-01-01", "2016-12-31")
 		d, err := time.Parse(DateOutputLayout, fullDate)
 		assert.NoError(t, err, "didn't get valid date format")
 		assert.False(t, d.After(maxDate), "random date didn't match specified max date")
@@ -259,41 +281,47 @@ func TestFullDateInRangeTwoArgs(t *testing.T) {
 }
 
 func TestFullDateInRangeSwappedArgs(t *testing.T) {
+	r := FromSeed(1234)
 	wrongMaxDate, _ := time.Parse(DateInputLayout, "2016-01-01")
-	fullDate := FullDateInRange("2016-12-31", "2016-01-01")
+	fullDate := r.FullDateInRange("2016-12-31", "2016-01-01")
 	d, err := time.Parse(DateOutputLayout, fullDate)
 	assert.NoError(t, err, "didn't get valid date format")
 	assert.Equal(t, d, wrongMaxDate, "didn't return min date")
 }
 
 func TestTimezone(t *testing.T) {
-	timezone := Timezone()
+	r := FromSeed(1234)
+	timezone := r.Timezone()
 	assert.Contains(t, jsonData.Timezones, timezone, "couldnt find timezone in timezones: %v", timezone)
 }
 
 func TestLocale(t *testing.T) {
-	locale := Locale()
+	r := FromSeed(1234)
+	locale := r.Locale()
 	_, err := language.Parse(locale)
 	assert.NoError(t, err, "invalid locale: %v", locale)
 }
 
 func TestLocalePenetration(t *testing.T) {
+	r := FromSeed(1234)
 	for i := 0; i < 10000; i += 1 {
-		locale := Locale()
+		locale := r.Locale()
 		_, err := language.Parse(locale)
 		assert.NoError(t, err, "invalid locale: %v", locale)
 	}
 }
 
 func TestUserAgentString(t *testing.T) {
-	ua := UserAgentString()
+	r := FromSeed(1234)
+	ua := r.UserAgentString()
 	assert.NotEmpty(t, ua, "empty User Agent String")
 	assert.True(t, regexp.MustCompile(`^[a-zA-Z]+\/[0-9]+.[0-9]+\ \(.*\).*$`).MatchString(ua),
 		"invalid generated User Agent String: %v", ua)
 }
 
 func TestPhoneNumbers(t *testing.T) {
-	CheckPhoneNumber(PhoneNumber(), t)
+	r := FromSeed(1234)
+	CheckPhoneNumber(r.PhoneNumber(), t)
 }
 
 func CheckPhoneNumber(str string, t *testing.T, msgAndArgs ...interface{}) {
@@ -305,9 +333,10 @@ func CheckPhoneNumber(str string, t *testing.T, msgAndArgs ...interface{}) {
 }
 
 func TestProvinceForCountry(t *testing.T) {
+	r := FromSeed(1234)
 	supportedCountries := []string{"US", "GB"}
 	for _, c := range supportedCountries {
-		p := ProvinceForCountry(c)
+		p := r.ProvinceForCountry(c)
 		assert.NotEmpty(t, p, "did not return a valid province for country %s", c)
 		switch c {
 		case "US":
@@ -316,14 +345,15 @@ func TestProvinceForCountry(t *testing.T) {
 			assert.Contains(t, jsonData.ProvincesGB, p, "did not return a known province for GB")
 		}
 	}
-	assert.Empty(t, ProvinceForCountry("bogus"), "did not return empty province for unknown country")
+	assert.Empty(t, r.ProvinceForCountry("bogus"), "did not return empty province for unknown country")
 }
 
 func TestStreetForCountry(t *testing.T) {
+	r := FromSeed(1234)
 	supportedCountries := []string{"US", "GB"}
 	for _, c := range supportedCountries {
-		p := StreetForCountry(c)
+		p := r.StreetForCountry(c)
 		assert.NotEmpty(t, p, "did not return a valid street for country %s", c)
 	}
-	assert.Empty(t, StreetForCountry("bogus"), "did not return empty street for unknown country")
+	assert.Empty(t, r.StreetForCountry("bogus"), "did not return empty street for unknown country")
 }
