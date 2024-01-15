@@ -276,7 +276,7 @@ func TestIpV4Address(t *testing.T) {
 
 	ipBlocks := strings.Split(ipAddress, ".")
 
-	if len(ipBlocks) < 0 || len(ipBlocks) > 4 {
+	if len(ipBlocks) > 4 {
 		t.Error("Invalid generated IP address")
 	}
 

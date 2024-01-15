@@ -126,13 +126,10 @@ func FirstName(gender int) string {
 	switch gender {
 	case Male:
 		name = randomFrom(jsonData.FirstNamesMale)
-		break
 	case Female:
 		name = randomFrom(jsonData.FirstNamesFemale)
-		break
 	default:
 		name = FirstName(rand.Intn(2))
-		break
 	}
 	return name
 }
@@ -156,20 +153,13 @@ func Email() string {
 func Country(countryStyle int64) string {
 	country := ""
 	switch countryStyle {
-
-	default:
-
 	case FullCountry:
 		country = randomFrom(jsonData.Countries)
-		break
-
 	case TwoCharCountry:
 		country = randomFrom(jsonData.CountriesTwoChars)
-		break
-
 	case ThreeCharCountry:
 		country = randomFrom(jsonData.CountriesThreeChars)
-		break
+	default:
 	}
 	return country
 }
@@ -319,12 +309,6 @@ func Adjective() string {
 func uppercaseFirstLetter(word string) string {
 	a := []rune(word)
 	a[0] = unicode.ToUpper(a[0])
-	return string(a)
-}
-
-func lowercaseFirstLetter(word string) string {
-	a := []rune(word)
-	a[0] = unicode.ToLower(a[0])
 	return string(a)
 }
 
