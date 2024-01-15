@@ -30,30 +30,28 @@ func TestFromRand(t *testing.T) {
 	assert.NotEqual(t, f1, f2)
 }
 
-func TestCustomRand(t *testing.T) {
-	r1 := rand.New(rand.NewSource(1))
-	r2 := rand.New(rand.NewSource(1))
+func TestRand(t *testing.T) {
+	r := FromSeed(1234)
 
-	CustomRand(r1)
-	s1 := RandStringRunes(10)
-	CustomRand(r2)
-	s2 := RandStringRunes(10)
+	t.Run("should pick randomly a string from a slice", func(t *testing.T) {
+		list := []string{"a", "b", "c", "d"}
+		elem := r.StringFrom(list)
+		assert.Contains(t, list, elem)
+	})
 
-	assert.Equal(t, s1, s2)
-}
+	t.Run("should generate a title", func(t *testing.T) {
+		titleMale := r.Title(Male)
+		titleFemale := r.Title(Female)
+		randomTitle := r.Title(100)
 
-func TestTitle(t *testing.T) {
-	titleMale := Title(Male)
-	titleFemale := Title(Female)
-	randomTitle := Title(100)
+		assert.Contains(t, jsonData.MaleTitles, titleMale, "titleMale empty or not in male titles")
+		assert.Contains(t, jsonData.FemaleTitles, titleFemale, "firstNameFemale empty or not in female titles")
 
-	assert.Contains(t, jsonData.MaleTitles, titleMale, "titleMale empty or not in male titles")
-	assert.Contains(t, jsonData.FemaleTitles, titleFemale, "firstNameFemale empty or not in female titles")
-
-	names := make([]string, len(jsonData.MaleTitles)+len(jsonData.FemaleTitles))
-	names = append(names, jsonData.MaleTitles...)
-	names = append(names, jsonData.FemaleTitles...)
-	assert.Contains(t, names, randomTitle, "randomName empty or not in male and female titles")
+		names := make([]string, len(jsonData.MaleTitles)+len(jsonData.FemaleTitles))
+		names = append(names, jsonData.MaleTitles...)
+		names = append(names, jsonData.FemaleTitles...)
+		assert.Contains(t, names, randomTitle, "randomName empty or not in male and female titles")
+	})
 }
 
 func TestRandomStringDigits(t *testing.T) {

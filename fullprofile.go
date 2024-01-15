@@ -98,7 +98,7 @@ func GenerateProfile(gender int) *Profile {
 			profile.Gender = "female"
 		}
 	}
-	profile.Name.Title = Title(gender)
+	profile.Name.Title = privateRand.pr.Title(gender)
 	profile.Name.First = FirstName(gender)
 	profile.Name.Last = LastName()
 	profile.ID.Name = "SSN"

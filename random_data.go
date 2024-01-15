@@ -129,24 +129,25 @@ func init() {
 	}
 }
 
-func CustomRand(randToUse *rand.Rand) {
-	privateRand.pr = FromRand(randToUse)
+// StringFrom eturns a random element of a slice
+func (r *Rand) StringFrom(source []string) string {
+	return source[r.Intn(len(source))]
 }
 
 // Returns a random part of a slice
-func randomFrom(source []string) string {
+func StringFrom(source []string) string {
 	return source[privateRand.Intn(len(source))]
 }
 
 // Title returns a random title, gender decides the gender of the name
-func Title(gender int) string {
+func (r *Rand) Title(gender int) string {
 	switch gender {
 	case Male:
-		return randomFrom(jsonData.MaleTitles)
+		return r.StringFrom(jsonData.MaleTitles)
 	case Female:
-		return randomFrom(jsonData.FemaleTitles)
+		return r.StringFrom(jsonData.FemaleTitles)
 	default:
-		return Title(privateRand.Intn(2))
+		return r.Title(privateRand.Intn(2))
 	}
 }
 
@@ -155,9 +156,9 @@ func FirstName(gender int) string {
 	var name = ""
 	switch gender {
 	case Male:
-		name = randomFrom(jsonData.FirstNamesMale)
+		name = StringFrom(jsonData.FirstNamesMale)
 	case Female:
-		name = randomFrom(jsonData.FirstNamesFemale)
+		name = StringFrom(jsonData.FirstNamesFemale)
 	default:
 		name = FirstName(rand.Intn(2))
 	}
@@ -166,7 +167,7 @@ func FirstName(gender int) string {
 
 // LastName returns a random last name
 func LastName() string {
-	return randomFrom(jsonData.LastNames)
+	return StringFrom(jsonData.LastNames)
 }
 
 // FullName returns a combination of FirstName LastName randomized, gender decides the gender of the name
@@ -176,7 +177,7 @@ func FullName(gender int) string {
 
 // Email returns a random email
 func Email() string {
-	return strings.ToLower(FirstName(RandomGender)+LastName()) + StringNumberExt(1, "", 3) + "@" + randomFrom(jsonData.Domains)
+	return strings.ToLower(FirstName(RandomGender)+LastName()) + StringNumberExt(1, "", 3) + "@" + StringFrom(jsonData.Domains)
 }
 
 // Country returns a random country, countryStyle decides what kind of format the returned country will have
@@ -184,11 +185,11 @@ func Country(countryStyle int64) string {
 	country := ""
 	switch countryStyle {
 	case FullCountry:
-		country = randomFrom(jsonData.Countries)
+		country = StringFrom(jsonData.Countries)
 	case TwoCharCountry:
-		country = randomFrom(jsonData.CountriesTwoChars)
+		country = StringFrom(jsonData.CountriesTwoChars)
 	case ThreeCharCountry:
-		country = randomFrom(jsonData.CountriesThreeChars)
+		country = StringFrom(jsonData.CountriesThreeChars)
 	default:
 	}
 	return country
@@ -196,12 +197,12 @@ func Country(countryStyle int64) string {
 
 // Currency returns a random currency under ISO 4217 format
 func Currency() string {
-	return randomFrom(jsonData.Currencies)
+	return StringFrom(jsonData.Currencies)
 }
 
 // City returns a random city
 func City() string {
-	return randomFrom(jsonData.Cities)
+	return StringFrom(jsonData.Cities)
 }
 
 // ProvinceForCountry returns a randomly selected province (state, county,subdivision ) name for a supplied country.
@@ -209,9 +210,9 @@ func City() string {
 func ProvinceForCountry(countrycode string) string {
 	switch countrycode {
 	case "US":
-		return randomFrom(jsonData.States)
+		return StringFrom(jsonData.States)
 	case "GB":
-		return randomFrom(jsonData.ProvincesGB)
+		return StringFrom(jsonData.ProvincesGB)
 	}
 	return ""
 }
@@ -219,14 +220,14 @@ func ProvinceForCountry(countrycode string) string {
 // State returns a random american state
 func State(typeOfState int) string {
 	if typeOfState == Small {
-		return randomFrom(jsonData.StatesSmall)
+		return StringFrom(jsonData.StatesSmall)
 	}
-	return randomFrom(jsonData.States)
+	return StringFrom(jsonData.States)
 }
 
 // Street returns a random fake street name
 func Street() string {
-	return fmt.Sprintf("%s %s", randomFrom(jsonData.People), randomFrom(jsonData.StreetTypes))
+	return fmt.Sprintf("%s %s", StringFrom(jsonData.People), StringFrom(jsonData.StreetTypes))
 }
 
 // StreetForCountry returns a random fake street name typical to the supplied country.
@@ -236,7 +237,7 @@ func StreetForCountry(countrycode string) string {
 	case "US":
 		return Street()
 	case "GB":
-		return fmt.Sprintf("%s %s", randomFrom(jsonData.StreetNameGB), randomFrom(jsonData.StreetTypesGB))
+		return fmt.Sprintf("%s %s", StringFrom(jsonData.StreetNameGB), StringFrom(jsonData.StreetTypesGB))
 	}
 	return ""
 }
@@ -248,7 +249,7 @@ func Address() string {
 
 // Paragraph returns a random paragraph
 func Paragraph() string {
-	return randomFrom(jsonData.Paragraphs)
+	return StringFrom(jsonData.Paragraphs)
 }
 
 // Number returns a random number, if only one integer (n1) is supplied it returns a number in [0,n1)
@@ -328,12 +329,12 @@ func Boolean() bool {
 
 // Noun returns a random noun
 func Noun() string {
-	return randomFrom(jsonData.Nouns)
+	return StringFrom(jsonData.Nouns)
 }
 
 // Adjective returns a random adjective
 func Adjective() string {
-	return randomFrom(jsonData.Adjectives)
+	return StringFrom(jsonData.Adjectives)
 }
 
 func uppercaseFirstLetter(word string) string {
@@ -381,12 +382,12 @@ func MacAddress() string {
 
 // Day returns random day
 func Day() string {
-	return randomFrom(jsonData.Days)
+	return StringFrom(jsonData.Days)
 }
 
 // Month returns random month
 func Month() string {
-	return randomFrom(jsonData.Months)
+	return StringFrom(jsonData.Months)
 }
 
 // FullDate returns full date
@@ -430,19 +431,19 @@ func FullDateInRange(dateRange ...string) string {
 }
 
 func Timezone() string {
-	return randomFrom(jsonData.Timezones)
+	return StringFrom(jsonData.Timezones)
 }
 
 func Locale() string {
-	return randomFrom(jsonData.Locales)
+	return StringFrom(jsonData.Locales)
 }
 
 func UserAgentString() string {
-	return randomFrom(jsonData.UserAgents)
+	return StringFrom(jsonData.UserAgents)
 }
 
 func PhoneNumber() string {
-	str := randomFrom(jsonData.CountryCallingCodes) + " "
+	str := StringFrom(jsonData.CountryCallingCodes) + " "
 
 	str += Digits(privateRand.Intn(3) + 1)
 
