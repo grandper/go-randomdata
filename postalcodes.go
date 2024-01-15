@@ -1,8 +1,6 @@
 package randomdata
 
 import (
-	"fmt"
-	"math"
 	"strings"
 )
 
@@ -207,38 +205,4 @@ func (r *Rand) PostalCode(countrycode string) string {
 	}
 
 	return ""
-}
-
-// Letters generates a string of N random leters (A-Z).
-func (r *Rand) Letters(letters int) string {
-	list := make([]byte, letters)
-	for i := range list {
-		list[i] = byte(r.Intn('Z'-'A') + 'A')
-	}
-	return string(list)
-}
-
-// Digits generates a string of N random digits, padded with zeros if necessary.
-func (r *Rand) Digits(digits int) string {
-	max := int(math.Pow10(digits)) - 1
-	num := r.Intn(max)
-	format := fmt.Sprintf("%%0%dd", digits)
-	return fmt.Sprintf(format, num)
-}
-
-// BoundedDigits generates a string of N random digits, padded with zeros if necessary.
-// The output is restricted to the given range.
-func (r *Rand) BoundedDigits(digits, low, high int) string {
-	if low > high {
-		low, high = high, low
-	}
-
-	max := int(math.Pow10(digits)) - 1
-	if high > max {
-		high = max
-	}
-
-	num := r.Intn(high-low+1) + low
-	format := fmt.Sprintf("%%0%dd", digits)
-	return fmt.Sprintf(format, num)
 }
