@@ -104,6 +104,12 @@ func (r *Rand) Float64() float64 {
 	return r.pr.Float64()
 }
 
+// Boolean returns randomly either true or false.
+func (r *Rand) Boolean() bool {
+	nr := r.Intn(2)
+	return nr != 0
+}
+
 // RandStringRunes generates random runes.
 func (r *Rand) RandStringRunes(n int) string {
 	b := make([]rune, n)
@@ -304,11 +310,6 @@ func (r *Rand) Alphanumeric(length int) string {
 	}
 
 	return string(list)
-}
-
-func (r *Rand) Boolean() bool {
-	nr := r.Intn(2)
-	return nr != 0
 }
 
 // Noun returns a random noun.

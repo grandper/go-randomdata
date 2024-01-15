@@ -13,24 +13,42 @@ import (
 	"golang.org/x/text/language"
 )
 
-func TestFromSeed(t *testing.T) {
-	r1 := FromSeed(1234)
-	r2 := FromSeed(5678)
-	f1 := r1.Float64()
-	f2 := r2.Float64()
-	assert.NotEqual(t, f1, f2)
-}
-
-func TestFromRand(t *testing.T) {
-	r1 := FromRand(rand.New(rand.NewSource(1234)))
-	r2 := FromRand(rand.New(rand.NewSource(5678)))
-	f1 := r1.Float64()
-	f2 := r2.Float64()
-	assert.NotEqual(t, f1, f2)
-}
-
 func TestRand(t *testing.T) {
+	t.Run("should be created from a seed", func(t *testing.T) {
+		r1 := FromSeed(1234)
+		r2 := FromSeed(5678)
+		f1 := r1.Float64()
+		f2 := r2.Float64()
+		assert.NotEqual(t, f1, f2)
+	})
+
+	t.Run("should be created from a rand.Rand", func(t *testing.T) {
+		r1 := FromRand(rand.New(rand.NewSource(1234)))
+		r2 := FromRand(rand.New(rand.NewSource(5678)))
+		f1 := r1.Float64()
+		f2 := r2.Float64()
+		assert.NotEqual(t, f1, f2)
+	})
+
 	r := FromSeed(1234)
+
+	t.Run("should generate integer between 0 and n-1", func(t *testing.T) {
+		const N = 10
+		value := r.Intn(N)
+		assert.GreaterOrEqual(t, value, 0)
+		assert.LessOrEqual(t, value, N)
+	})
+
+	t.Run("should generate float between 0 and 1", func(t *testing.T) {
+		value := r.Float64()
+		assert.GreaterOrEqual(t, value, 0.0)
+		assert.Less(t, value, 1.0)
+	})
+
+	t.Run("should pick randomly a boolean value", func(t *testing.T) {
+		booleanVal := r.Boolean()
+		assert.True(t, booleanVal == true || booleanVal == false, "bool was wrong format")
+	})
 
 	t.Run("should pick randomly a string from a slice", func(t *testing.T) {
 		list := []string{"a", "b", "c", "d"}
@@ -142,12 +160,6 @@ func TestAlphanumeric(t *testing.T) {
 
 	re := regexp.MustCompile(`^[[:alnum:]]+$`)
 	assert.True(t, re.MatchString(alphanumric), "alphanumric contains invalid character")
-}
-
-func TestBool(t *testing.T) {
-	r := FromSeed(1234)
-	booleanVal := r.Boolean()
-	assert.True(t, booleanVal == true || booleanVal == false, "bool was wrong format")
 }
 
 func TestState(t *testing.T) {
