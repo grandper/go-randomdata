@@ -3,7 +3,6 @@ package randomdata
 import "fmt"
 
 func ExampleRandomdata() {
-
 	// Print a male first name
 	fmt.Println(FirstName(Male))
 
@@ -96,5 +95,4 @@ func ExampleRandomdata() {
 
 	// Print full date
 	fmt.Println(FullDate())
-
 }
