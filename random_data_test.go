@@ -50,6 +50,32 @@ func TestRand(t *testing.T) {
 		assert.True(t, booleanVal == true || booleanVal == false, "bool was wrong format")
 	})
 
+	t.Run("should a duration", func(t *testing.T) {
+		maxDuration := 24 * time.Hour
+		duration := r.Duration(maxDuration)
+		assert.GreaterOrEqual(t, duration, time.Duration(0))
+		assert.LessOrEqual(t, duration, maxDuration)
+	})
+
+	t.Run("should generate a time", func(t *testing.T) {
+		startTime := time.Now()
+		timeRange := 24 * time.Hour
+		endTime := startTime.Add(timeRange)
+		randTime := r.Time(startTime, timeRange)
+		assert.True(t, randTime.After(startTime))
+		assert.True(t, randTime.Before(endTime))
+	})
+
+	t.Run("should generate a time range", func(t *testing.T) {
+		startTime := time.Now()
+		timeRange := 24 * time.Hour
+		endTime := startTime.Add(timeRange)
+		time1, time2 := r.TimeRange(startTime, timeRange)
+		assert.True(t, time1.After(startTime))
+		assert.True(t, time1.Before(time2))
+		assert.True(t, time2.Before(endTime))
+	})
+
 	t.Run("should pick randomly a string from a slice", func(t *testing.T) {
 		list := []string{"a", "b", "c", "d"}
 		elem := r.StringFrom(list)

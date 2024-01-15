@@ -46,6 +46,24 @@ import (
 func main() {
     r := randomdata.FromSeed(1234)
 
+	// Print an int from the half-open interval [0, 10)
+	fmt.Println(r.Intn(10))
+
+	// Print a float64 from the half-open interval [0.0, 1.0)
+	fmt.Println(r.Float64())
+
+	// Print a random bool
+	fmt.Println(r.Boolean())
+
+	// Print a duration
+	fmt.Println(r.Duration(24 * time.Hour).Hours())
+
+	// Print a time between now and Tomorrow
+	fmt.Println(r.Time(time.Now(), 24*time.Hour))
+
+	// Print a time range now and Tomorrow
+	fmt.Println(r.TimeRange(time.Now(), 24*time.Hour))
+
     // Print a random silly name
     fmt.Println(r.SillyName())
 
@@ -123,9 +141,6 @@ func main() {
 
     // Print a random float >= 0 and < 20
     fmt.Println(r.Decimal(20))
-
-    // Print a bool
-    fmt.Println(r.Boolean())
 
     // Print a paragraph
     fmt.Println(r.Paragraph())

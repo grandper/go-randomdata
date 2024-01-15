@@ -110,6 +110,27 @@ func (r *Rand) Boolean() bool {
 	return nr != 0
 }
 
+// Duration returns a random duration between 0 and the specified max duration.
+func (r *Rand) Duration(maxDuration time.Duration) time.Duration {
+	n := int64(maxDuration)
+	randN := r.pr.Int63n(n)
+	return time.Duration(randN)
+}
+
+// Time returns a random time between the given time and within a given duration time range.
+func (r *Rand) Time(t time.Time, timeRange time.Duration) time.Time {
+	return t.Add(r.Duration(timeRange))
+}
+
+// TimeRange returns a random time interval between the given time and within a given time range.
+func (r *Rand) TimeRange(t time.Time, timeRange time.Duration) (time.Time, time.Time) {
+	d1 := r.Duration(timeRange)
+	d2 := r.Duration(timeRange - d1)
+	time1 := t.Add(d1)
+	time2 := time1.Add(d2)
+	return time1, time2
+}
+
 // RandStringRunes generates random runes.
 func (r *Rand) RandStringRunes(n int) string {
 	b := make([]rune, n)
