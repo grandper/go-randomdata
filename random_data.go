@@ -68,6 +68,34 @@ type jsonContent struct {
 	StreetTypesGB       []string `json:"streetTypesGB"`
 }
 
+// Rand is a source of random numbers.
+type Rand struct {
+	pr *rand.Rand
+	mu *sync.Mutex
+}
+
+// FromSeed creates a new source of random numbers.
+func FromSeed(seed int64) *Rand {
+	return &Rand{
+		pr: rand.New(rand.NewSource(seed)),
+		mu: &sync.Mutex{},
+	}
+}
+
+// Intn returns, as an int, a non-negative pseudo-random number in the half-open interval [0,n). It panics if n <= 0.
+func (r *Rand) Intn(n int) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.pr.Intn(n)
+}
+
+// Float64 returns, as a float64, a pseudo-random number in the half-open interval [0.0,1.0).
+func (r *Rand) Float64() float64 {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.pr.Float64()
+}
+
 type pRand struct {
 	pr *rand.Rand
 	mu *sync.Mutex

@@ -14,6 +14,15 @@ import (
 	"golang.org/x/text/language"
 )
 
+func TestFromSeed(t *testing.T) {
+	t.Log("TestCustomRand")
+	r1 := FromSeed(1234)
+	r2 := FromSeed(5678)
+	f1 := r1.Float64()
+	f2 := r2.Float64()
+	assert.NotEqual(t, f1, f2)
+}
+
 func TestCustomRand(t *testing.T) {
 	r1 := rand.New(rand.NewSource(1))
 	r2 := rand.New(rand.NewSource(1))
