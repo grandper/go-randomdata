@@ -194,6 +194,7 @@ The [CHANGELOG.md](CHANGELOG.md) file contains the changelog of the project.
 
 ## Contributors
 
+* [grandper](https://github.com/grandper)
 * [jteeuwen](https://github.com/jteeuwen)
 * [n1try](https://github.com/n1try)
 
