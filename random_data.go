@@ -74,10 +74,18 @@ type Rand struct {
 	mu *sync.Mutex
 }
 
-// FromSeed creates a new source of random numbers.
+// FromSeed creates a new source of random numbers using a seed.
 func FromSeed(seed int64) *Rand {
 	return &Rand{
 		pr: rand.New(rand.NewSource(seed)),
+		mu: &sync.Mutex{},
+	}
+}
+
+// FromRand creates a new source of random numbers from a rand.Rand.
+func FromRand(randToUse *rand.Rand) *Rand {
+	return &Rand{
+		pr: randToUse,
 		mu: &sync.Mutex{},
 	}
 }
@@ -97,19 +105,14 @@ func (r *Rand) Float64() float64 {
 }
 
 type pRand struct {
-	pr *rand.Rand
-	mu *sync.Mutex
+	pr *Rand
 }
 
 func (r *pRand) Intn(n int) int {
-	r.mu.Lock()
-	defer r.mu.Unlock()
 	return r.pr.Intn(n)
 }
 
 func (r *pRand) Float64() float64 {
-	r.mu.Lock()
-	defer r.mu.Unlock()
 	return r.pr.Float64()
 }
 
@@ -117,18 +120,17 @@ var jsonData = jsonContent{}
 var privateRand *pRand
 
 func init() {
-	privateRand = &pRand{rand.New(rand.NewSource(time.Now().UnixNano())), &sync.Mutex{}}
+	privateRand = &pRand{FromRand(rand.New(rand.NewSource(time.Now().UnixNano())))}
 	jsonData = jsonContent{}
 
 	err := json.Unmarshal(data, &jsonData)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func CustomRand(randToUse *rand.Rand) {
-	privateRand.pr = randToUse
+	privateRand.pr = FromRand(randToUse)
 }
 
 // Returns a random part of a slice
