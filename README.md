@@ -1,10 +1,5 @@
 # go-randomdata
 
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/Pallinder/go-randomdata/issues)
-[![GoDoc](https://godoc.org/github.com/Pallinder/go-randomdata?status.svg)](https://godoc.org/github.com/Pallinder/go-randomdata)
-[![Build Status](https://travis-ci.org/Pallinder/go-randomdata.png)](https://travis-ci.org/Pallinder/go-randomdata)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Pallinder/go-randomdata)](https://goreportcard.com/report/github.com/Pallinder/go-randomdata)
-
 randomdata is a tiny help suite for generating random data such as
 
 * first names (male or female)
@@ -28,14 +23,19 @@ randomdata is a tiny help suite for generating random data such as
 * random date inside range
 * random phone number
 
+## Credit where credit is due
+
+This repository is a fork of the [go-randomdata](https://github.com/Pallinder/go-randomdata/graphs/contributors) created by [David Pallinder](https://github.com/Pallinder).
+
+This fork was created to change fundamentally how the random source is used. In the original work, the random source is defined globally. In this version, you need to create a random generator explicitly.
+
 ## Installation
 
-```go get github.com/Pallinder/go-randomdata```
+```go get github.com/grandper/go-randomdata```
 
 ## Usage
 
 ```go
-
 package main
 
 import (
@@ -199,20 +199,4 @@ func main() {
     // Get a random country-localised province for USA
     fmt.Println(r.ProvinceForCountry("US"))
 }
-
 ```
-
-## Versioning / Release Strategy
-Go-Randomdata follows [Semver](https://www.semver.org)
-
-You can find current releases tagged under the [releases section](https://github.com/Pallinder/go-randomdata/releases).
-
-The [CHANGELOG.md](CHANGELOG.md) file contains the changelog of the project.
-
-## Contributors
-
-* [grandper](https://github.com/grandper)
-* [jteeuwen](https://github.com/jteeuwen)
-* [n1try](https://github.com/n1try)
-
-All the other contributors are listed [here](https://github.com/Pallinder/go-randomdata/graphs/contributors).
