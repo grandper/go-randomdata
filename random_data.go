@@ -37,7 +37,7 @@ const (
 	DateOutputLayout = "Monday 2 Jan 2006"
 )
 
-const ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 type jsonContent struct {
 	Adjectives          []string `json:"adjectives"`
@@ -69,6 +69,16 @@ type jsonContent struct {
 	StreetTypesGB       []string `json:"streetTypesGB"`
 }
 
+var jsonData = jsonContent{}
+
+func init() {
+	jsonData = jsonContent{}
+	err := json.Unmarshal(data, &jsonData)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Rand is a source of random numbers.
 type Rand struct {
 	pr *rand.Rand
@@ -98,11 +108,40 @@ func (r *Rand) Intn(n int) int {
 	return r.pr.Intn(n)
 }
 
+// Number returns a random number, if only one integer (n1) is supplied it returns a number in [0,n1).
+// if a second argument is supplied it returns a number in [n1,n2).
+func (r *Rand) Number(numberRange ...int) int {
+	nr := 0
+	if len(numberRange) > 1 {
+		nr = 1
+		nr = r.Intn(numberRange[1]-numberRange[0]) + numberRange[0]
+	} else {
+		nr = r.Intn(numberRange[0])
+	}
+	return nr
+}
+
 // Float64 returns, as a float64, a pseudo-random number in the half-open interval [0.0,1.0).
 func (r *Rand) Float64() float64 {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return r.pr.Float64()
+}
+
+func (r *Rand) Decimal(numberRange ...int) float64 {
+	nr := 0.0
+	if len(numberRange) > 1 {
+		nr = 1.0
+		nr = r.Float64()*(float64(numberRange[1])-float64(numberRange[0])) + float64(numberRange[0])
+	} else {
+		nr = r.Float64() * float64(numberRange[0])
+	}
+
+	if len(numberRange) > 2 {
+		sf := strconv.FormatFloat(nr, 'f', numberRange[2], 64)
+		nr, _ = strconv.ParseFloat(sf, 64)
+	}
+	return nr
 }
 
 // Boolean returns randomly either true or false.
@@ -132,6 +171,61 @@ func (r *Rand) TimeRange(t time.Time, timeRange time.Duration) (time.Time, time.
 	return time1, time2
 }
 
+// Day returns random day.
+func (r *Rand) Day() string {
+	return r.StringFrom(jsonData.Days)
+}
+
+// Month returns random month.
+func (r *Rand) Month() string {
+	return r.StringFrom(jsonData.Months)
+}
+
+// FullDate returns full date.
+func (r *Rand) FullDate() string {
+	timestamp := time.Now()
+	year := timestamp.Year()
+	month := r.Number(1, 13)
+	maxDay := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
+	day := r.Number(1, maxDay+1)
+	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	return date.Format(DateOutputLayout)
+}
+
+// FullDateInRange returns a date string within a given range, given in the format "2006-01-02".
+// If no argument is supplied it will return the result of randomdata.FullDate().
+// If only one argument is supplied it is treated as the max date to return.
+// If a second argument is supplied it returns a date between (and including) the two dates.
+// Returned date is in format "Monday 2 Jan 2006".
+func (r *Rand) FullDateInRange(dateRange ...string) string {
+	var (
+		min        time.Time
+		max        time.Time
+		duration   int
+		dateString string
+	)
+	if len(dateRange) == 1 {
+		max, _ = time.Parse(DateInputLayout, dateRange[0])
+	} else if len(dateRange) == 2 {
+		min, _ = time.Parse(DateInputLayout, dateRange[0])
+		max, _ = time.Parse(DateInputLayout, dateRange[1])
+	}
+	if !max.IsZero() && max.After(min) {
+		duration = r.Number(int(max.Sub(min))) * -1
+		dateString = max.Add(time.Duration(duration)).Format(DateOutputLayout)
+	} else if !max.IsZero() && !max.After(min) {
+		dateString = max.Format(DateOutputLayout)
+	} else {
+		dateString = r.FullDate()
+	}
+	return dateString
+}
+
+// Timezone returns a random timezone.
+func (r *Rand) Timezone() string {
+	return r.StringFrom(jsonData.Timezones)
+}
+
 // RandStringRunes generates random runes.
 func (r *Rand) RandStringRunes(n int) string {
 	b := make([]rune, n)
@@ -141,14 +235,49 @@ func (r *Rand) RandStringRunes(n int) string {
 	return string(b)
 }
 
-var jsonData = jsonContent{}
+// Alphanumeric returns a random alphanumeric string consits of [0-9a-zA-Z].
+func (r *Rand) Alphanumeric(length int) string {
+	list := make([]byte, length)
 
-func init() {
-	jsonData = jsonContent{}
-	err := json.Unmarshal(data, &jsonData)
-	if err != nil {
-		log.Fatal(err)
+	for i := range list {
+		list[i] = alphanumeric[r.Intn(len(alphanumeric))]
 	}
+
+	return string(list)
+}
+
+// Letters generates a string of N random leters (A-Z).
+func (r *Rand) Letters(letters int) string {
+	list := make([]byte, letters)
+	for i := range list {
+		list[i] = byte(r.Intn('Z'-'A') + 'A')
+	}
+	return string(list)
+}
+
+// Digits generates a string of N random digits, padded with zeros if necessary.
+func (r *Rand) Digits(digits int) string {
+	max := int(math.Pow10(digits)) - 1
+	num := r.Intn(max)
+	format := fmt.Sprintf("%%0%dd", digits)
+	return fmt.Sprintf(format, num)
+}
+
+// BoundedDigits generates a string of N random digits, padded with zeros if necessary.
+// The output is restricted to the given range.
+func (r *Rand) BoundedDigits(digits, low, high int) string {
+	if low > high {
+		low, high = high, low
+	}
+
+	max := int(math.Pow10(digits)) - 1
+	if high > max {
+		high = max
+	}
+
+	num := r.Intn(high-low+1) + low
+	format := fmt.Sprintf("%%0%dd", digits)
+	return fmt.Sprintf(format, num)
 }
 
 // StringFrom returns a random element of a slice.
@@ -157,6 +286,25 @@ func (r *Rand) StringFrom(source []string) string {
 		return ""
 	}
 	return source[r.Intn(len(source))]
+}
+
+// StringNumberExt returns a random number as a string.
+func (r *Rand) StringNumberExt(numberPairs int, separator string, numberOfDigits int) string {
+	numberString := ""
+	for i := 0; i < numberPairs; i++ {
+		for d := 0; d < numberOfDigits; d++ {
+			numberString += fmt.Sprintf("%d", r.Number(0, 9))
+		}
+		if i+1 != numberPairs {
+			numberString += separator
+		}
+	}
+	return numberString
+}
+
+// StringNumber returns a random number as a string.
+func (r *Rand) StringNumber(numberPairs int, separator string) string {
+	return r.StringNumberExt(numberPairs, separator, 2)
 }
 
 // Title returns a random title, gender decides the gender of the name.
@@ -276,64 +424,6 @@ func (r *Rand) Paragraph() string {
 	return r.StringFrom(jsonData.Paragraphs)
 }
 
-// Number returns a random number, if only one integer (n1) is supplied it returns a number in [0,n1).
-// if a second argument is supplied it returns a number in [n1,n2).
-func (r *Rand) Number(numberRange ...int) int {
-	nr := 0
-	if len(numberRange) > 1 {
-		nr = 1
-		nr = r.Intn(numberRange[1]-numberRange[0]) + numberRange[0]
-	} else {
-		nr = r.Intn(numberRange[0])
-	}
-	return nr
-}
-
-func (r *Rand) Decimal(numberRange ...int) float64 {
-	nr := 0.0
-	if len(numberRange) > 1 {
-		nr = 1.0
-		nr = r.Float64()*(float64(numberRange[1])-float64(numberRange[0])) + float64(numberRange[0])
-	} else {
-		nr = r.Float64() * float64(numberRange[0])
-	}
-
-	if len(numberRange) > 2 {
-		sf := strconv.FormatFloat(nr, 'f', numberRange[2], 64)
-		nr, _ = strconv.ParseFloat(sf, 64)
-	}
-	return nr
-}
-
-func (r *Rand) StringNumberExt(numberPairs int, separator string, numberOfDigits int) string {
-	numberString := ""
-	for i := 0; i < numberPairs; i++ {
-		for d := 0; d < numberOfDigits; d++ {
-			numberString += fmt.Sprintf("%d", r.Number(0, 9))
-		}
-		if i+1 != numberPairs {
-			numberString += separator
-		}
-	}
-	return numberString
-}
-
-// StringNumber returns a random number as a string.
-func (r *Rand) StringNumber(numberPairs int, separator string) string {
-	return r.StringNumberExt(numberPairs, separator, 2)
-}
-
-// Alphanumeric returns a random alphanumeric string consits of [0-9a-zA-Z].
-func (r *Rand) Alphanumeric(length int) string {
-	list := make([]byte, length)
-
-	for i := range list {
-		list[i] = ALPHANUMERIC[r.Intn(len(ALPHANUMERIC))]
-	}
-
-	return string(list)
-}
-
 // Noun returns a random noun.
 func (r *Rand) Noun() string {
 	return r.StringFrom(jsonData.Nouns)
@@ -344,15 +434,15 @@ func (r *Rand) Adjective() string {
 	return r.StringFrom(jsonData.Adjectives)
 }
 
+// SillyName returns a silly name, useful for randomizing naming of things.
+func (r *Rand) SillyName() string {
+	return uppercaseFirstLetter(r.Noun()) + r.Adjective()
+}
+
 func uppercaseFirstLetter(word string) string {
 	a := []rune(word)
 	a[0] = unicode.ToUpper(a[0])
 	return string(a)
-}
-
-// SillyName returns a silly name, useful for randomizing naming of things.
-func (r *Rand) SillyName() string {
-	return uppercaseFirstLetter(r.Noun()) + r.Adjective()
 }
 
 // IpV4Address returns a valid IPv4 address as string.
@@ -387,68 +477,17 @@ func (r *Rand) MacAddress() string {
 	return strings.Join(blocks, ":")
 }
 
-// Day returns random day.
-func (r *Rand) Day() string {
-	return r.StringFrom(jsonData.Days)
-}
-
-// Month returns random month.
-func (r *Rand) Month() string {
-	return r.StringFrom(jsonData.Months)
-}
-
-// FullDate returns full date.
-func (r *Rand) FullDate() string {
-	timestamp := time.Now()
-	year := timestamp.Year()
-	month := r.Number(1, 13)
-	maxDay := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day()
-	day := r.Number(1, maxDay+1)
-	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	return date.Format(DateOutputLayout)
-}
-
-// FullDateInRange returns a date string within a given range, given in the format "2006-01-02".
-// If no argument is supplied it will return the result of randomdata.FullDate().
-// If only one argument is supplied it is treated as the max date to return.
-// If a second argument is supplied it returns a date between (and including) the two dates.
-// Returned date is in format "Monday 2 Jan 2006".
-func (r *Rand) FullDateInRange(dateRange ...string) string {
-	var (
-		min        time.Time
-		max        time.Time
-		duration   int
-		dateString string
-	)
-	if len(dateRange) == 1 {
-		max, _ = time.Parse(DateInputLayout, dateRange[0])
-	} else if len(dateRange) == 2 {
-		min, _ = time.Parse(DateInputLayout, dateRange[0])
-		max, _ = time.Parse(DateInputLayout, dateRange[1])
-	}
-	if !max.IsZero() && max.After(min) {
-		duration = r.Number(int(max.Sub(min))) * -1
-		dateString = max.Add(time.Duration(duration)).Format(DateOutputLayout)
-	} else if !max.IsZero() && !max.After(min) {
-		dateString = max.Format(DateOutputLayout)
-	} else {
-		dateString = r.FullDate()
-	}
-	return dateString
-}
-
-func (r *Rand) Timezone() string {
-	return r.StringFrom(jsonData.Timezones)
-}
-
-func (r *Rand) Locale() string {
-	return r.StringFrom(jsonData.Locales)
-}
-
+// UserAgentString returns a user agent used to browse the web.
 func (r *Rand) UserAgentString() string {
 	return r.StringFrom(jsonData.UserAgents)
 }
 
+// Locale returns a random locale.
+func (r *Rand) Locale() string {
+	return r.StringFrom(jsonData.Locales)
+}
+
+// PhoneNumber returns a random phone number.
 func (r *Rand) PhoneNumber() string {
 	str := r.StringFrom(jsonData.CountryCallingCodes) + " "
 
@@ -462,38 +501,4 @@ func (r *Rand) PhoneNumber() string {
 		}
 		str += " " + r.Digits(r.Intn(remaining-1)+1)
 	}
-}
-
-// Letters generates a string of N random leters (A-Z).
-func (r *Rand) Letters(letters int) string {
-	list := make([]byte, letters)
-	for i := range list {
-		list[i] = byte(r.Intn('Z'-'A') + 'A')
-	}
-	return string(list)
-}
-
-// Digits generates a string of N random digits, padded with zeros if necessary.
-func (r *Rand) Digits(digits int) string {
-	max := int(math.Pow10(digits)) - 1
-	num := r.Intn(max)
-	format := fmt.Sprintf("%%0%dd", digits)
-	return fmt.Sprintf(format, num)
-}
-
-// BoundedDigits generates a string of N random digits, padded with zeros if necessary.
-// The output is restricted to the given range.
-func (r *Rand) BoundedDigits(digits, low, high int) string {
-	if low > high {
-		low, high = high, low
-	}
-
-	max := int(math.Pow10(digits)) - 1
-	if high > max {
-		high = max
-	}
-
-	num := r.Intn(high-low+1) + low
-	format := fmt.Sprintf("%%0%dd", digits)
-	return fmt.Sprintf(format, num)
 }
